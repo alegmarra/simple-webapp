@@ -111,7 +111,7 @@ Responder un request desde el webService:
 @Path appendea la string al path del contexto.
 Ejemplo, donde el path resultante es userController/testJSON:
 
-	@Path("/")
+	@Path("/userController")
 	public class UserController {
 	    @Path("testJSON")  //
 	    public User getUserJSON(@QueryParam("userkey")String userkey) {
@@ -120,24 +120,27 @@ Ejemplo, donde el path resultante es userController/testJSON:
 	}
 
 
-Sería interesante poder poner en cada clase un nombre al path y en una clase abstracta controller poner
-@Path("/" + Controller.path), siendo Controller.path definida como public static String.
-Si no se pone @Path a la clase, los métodos de UserController no son accesibles a través de ws, o al menos
-no sé cómo es el path.
-
-El primer elemento de la URL de los request (userController) sale de acá: src/main/webapp/WEB-INF/web.xml.
+El primer elemento de la URL de los request (en este caso, '/') sale de acá: src/main/webapp/WEB-INF/web.xml,
+del nodo
+    <servlet-mapping>
+        <servlet-name>Jersey Web Application</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+    
 No hay una magia detrás que tome el nombre de la clase y lo transforme en path :/
 
 Si a un método no se le pone @Path (siendo que a la clase sí), ese método se va a llamar cuando se hagan un
-request al path vacío (con /userController, claro)
-Si a dos métodos no se les pone @Path (siendo que a la clase sí), rompe todo, 500 - Internal server error
+request al path vacío (con /userController, si fuera de esa clase)
+Si a dos métodos no se les pone @Path (siendo que a la clase sí), rompe todo, 500 - Internal server error,
+porque sólo uno puede tener el mismo path.
 
-Que una clase herede de otra no afecta el path, es decir, sigue siendo la base /userController.
+Que una clase herede de otra no afecta el path, es decir, sigue siendo la base '/' o lo que hubiera sido definido
+en web.xml.
 Ejemplo:
-Para llamar al siguiente método, el path es /usercontroller/myPath/foo
+Para llamar al siguiente método, el path es /usercontrollerhijo/myPath
 
-	@Path("/usercontroller")
-	public class UserController extends UserController {
+	@Path("/userControllerHijo")
+	public class UserControllerHijo extends UserController {
 
 	    @GET
 	    @Produces(MediaType.TEXT_PLAIN)
@@ -162,14 +165,14 @@ Ejemplo tomando la última parte del path como la variable userkey:
 @QueryParam toma un parámetro de la query string
 
 
-@Produces informa el tipo de respuesta que manda (JSON, XML, binario...).
+@Produces define el tipo de respuesta que manda (JSON, XML, binario...).
 Poniendo @Produces(MediaType.APPLICATION_JSON) a nivel clase abstracta controller quedaría definido que
  devolvemos siempre JSON.
-Un mismo método puede tener @Produces de varios tipos, (por ejemplo xml y json) y que decida que retornar
+Un mismo método puede tener @Produces de varios tipos, (por ejemplo xml y json) y que decida qué retornar
 dependiendo qué venga en el header del request
 
-@Consumes sirve para definir qué tipo de datos se aceptan, no tiene que ver con consumir
-o no un ws
+@Consumes sirve para definir qué tipo de datos se aceptan en los request (no confundir: no tiene que ver con consumir
+o no un ws ajeno)
 
 
 # Vistas
