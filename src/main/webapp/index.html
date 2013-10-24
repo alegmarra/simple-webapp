@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+<script>
+
+	function getXMLDoc(url) {
+		var httpRequest;
+		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+			httpRequest = new XMLHttpRequest();
+		} else {// code for IE6, IE5
+			httpRequest = new ActiveXObject("Microsoft.httpRequest");
+		}
+		httpRequest.onreadystatechange = function() {
+			if (httpRequest.readyState == 4 && httpRequest.status == 200) {
+
+				console.log(httpRequest.responseText);
+				
+				xmlDoc = httpRequest.responseXML;
+
+				document.getElementById('User').innerHTML = xmlDoc
+						.getElementsByTagName("user")[0].childNodes[0].nodeValue;
+				document.getElementById('Name').innerHTML = xmlDoc
+						.getElementsByTagName("fullName")[0].childNodes[0].nodeValue;
+				document.getElementById('ID').innerHTML = xmlDoc
+						.getElementsByTagName("id")[0].childNodes[0].nodeValue;
+			}
+		}
+		httpRequest.open("GET", url, true);
+		httpRequest.send();
+	}
+
+	function getJSON(url,fieldID,fieldName,fieldUser) {
+		var httpRequest;
+		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+			httpRequest = new XMLHttpRequest();
+		} else {// code for IE6, IE5
+			httpRequest = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		httpRequest.onreadystatechange = function() {
+			
+			if (httpRequest.readyState == 4) {
+
+				 if (httpRequest.status != 200){
+					document.getElementById('statusError').innerHTML = httpRequest.status;
+					document.getElementById('messageError').innerHTML = httpRequest.responseText;
+						
+				}else{
+					 
+					console.log(httpRequest.responseText);
+					// Javascript function JSON.parse to parse JSON data
+					var jsonObj = JSON.parse(httpRequest.responseText);
+	
+					// jsonObj variable now contains the data structure and can
+					// be accessed as jsonObj.name and jsonObj.country.
+					document.getElementById(fieldUser).innerHTML = jsonObj.user;
+					document.getElementById(fieldName).innerHTML = jsonObj.fullName;
+					document.getElementById(fieldID).innerHTML = jsonObj.id;
+					
+					document.getElementById('status').innerHTML = httpRequest.status;
+				}
+			}
+		}
+		
+		httpRequest.open("GET", url, true);
+		httpRequest.send();
+	}
+	
+	function postJSON(url) {
+		var xmlhttp;
+		if (window.XMLHttpRequest) {// code for IE7+, Firefox, Chrome, Opera, Safari
+			xmlhttp = new XMLHttpRequest();
+		} else {// code for IE6, IE5
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		}
+		
+		xmlhttp.onreadystatechange = function() {
+			if (xmlhttp.readyState == 4 && xmlhttp.status == 200) {
+
+				console.log(xmlhttp.responseText);
+				// Javascript function JSON.parse to parse JSON data
+				var jsonObj = JSON.parse(xmlhttp.responseText);
+
+				// jsonObj variable now contains the data structure and can
+				// be accessed as jsonObj.name and jsonObj.country.
+				document.getElementById('UserPosted').innerHTML = jsonObj.user;
+				document.getElementById('NamePosted').innerHTML = jsonObj.fullName;
+				document.getElementById('IDPosted').innerHTML = jsonObj.id;
+			}
+		}
+
+		xmlhttp.open("POST", url);
+		xmlhttp.setRequestHeader("Content-Type", "application/json");
+		xmlhttp.send(JSON.stringify({id:5, user:"myUser", fullName:"myFullName"}));
+	}
+
+    function getDespegar() {
+        $.ajax({
+            url: 'userController/testRedirect',
+            error: function (data) {
+            	$('#despegar').html('<h4 style="color: red;">Error: '+ data.status + ' ' + data.statusText + '</h4>'+'<p>'+ data.responseText +'</p>');
+                
+            },
+            success: function (data) {
+                var arr = data.data;
+                $despegar = $('#despegar');
+                for (var i = 0; i < arr.length; ++i )
+                    $despegar.append('<a href="https://maps.google.com/maps?ll=' + arr[i].geoLocation.latitude + ',' + arr[i].geoLocation.longitude + '&z=10">' + arr[i].name + '</a><br/>');
+            }
+        })
+    }
+    
+	</script>
+</head>
+<body>
+
+	<h2>Jersey RESTful Web Application with simple html+AJAX in client-side</h2>
+
+	<h2>Retrieve data from XML object => 'Admin' user</h2>
+	<p>	<b>User: </b><span id="User"></span></p>
+	<p>	<b>Name: </b><span id="Name"></span></p>
+	<p>	<b>ID: </b><span id="ID"></span></p>
+	<button onclick="getXMLDoc('userController/testXML/admin')">Get XML data</button>
+
+	<h2>Retrieve data from Json object => 'Common' User</h2>
+	<p>	<b>User: </b><span id="UserJson"></span></p>
+	<p>	<b>Name: </b><span id="NameJson"></span></p>
+	<p>	<b>ID: </b><span id="IDJson"></span></p>
+	<p>	<b>Status: </b><span id="status"></span></p>
+	
+	<button onclick="getJSON('userController/testJSON?userkey=common1','IDJson','NameJson','UserJson')">Get JSON data</button>
+
+	<h2>Ask for invalid user => Error status</h2>
+	<p>	<b>Status: </b><span id="statusError"></span></p>
+	<p>	<b>Message: </b><span id="messageError"></span></p>
+	
+	<button onclick="getJSON('userController/testJSON?userkey=invalid')">Get Error</button>
+
+
+    <h2>SEND data with Json Object {id:5, user:"myUser", fullName:"myFullName"} => Returns modified object</h2>
+    <p>	<b>User: </b><span id="UserPosted"></span></p>
+    <p>	<b>Name: </b><span id="NamePosted"></span></p>
+    <p>	<b>ID: </b><span id="IDPosted"></span></p>
+    <button onclick="postJSON('userController/testJSON/upload')">POST JSON data</button>
+
+
+    <h2>Get Despegar.com available cities for their Trip Planning service</h2>
+    <button onclick="getDespegar()">GET through redirection <br/> to another service</button>
+    <div id="despegar"></div>
+    
+</body>
+</html>
