@@ -3,3 +3,7 @@
 .settings/
 *.class
 target
+
+# IntelliJ IDEA stuff
+.idea
+*.iml
